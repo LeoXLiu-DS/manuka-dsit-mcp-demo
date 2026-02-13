@@ -131,17 +131,109 @@ search_apprenticeship_data(
 - **Levels**: Intermediate (L2), Advanced (L3), Higher (L4+)
 - **Age groups**: Under 19, 19-24, 25+
 
-## Deployment to Databricks Apps
+## Architecture
 
-1. Configure `app.yaml` if needed
-2. Deploy using Databricks CLI:
+### DfE MCP Server Components
 
-```bash
-databricks apps create dfe-mcp-server --source-code-path .
-databricks apps deploy dfe-mcp-server
+```
+┌──────────────────────────────────────┐
+│   AI Agent / Claude / Client         │
+│   (with MCP protocol support)        │
+└────────────────┬─────────────────────┘
+                 │ HTTP/SSE
+        ┌────────▼────────┐
+        │ Databricks App  │
+        │ (OAuth proxy)   │
+        └────────┬────────┘
+                 │ HTTP
+    ┌────────────▼──────────────┐
+    │    FastAPI + FastMCP      │
+    │    (dft-mcp-server)       │
+    └────┬───────────┬──────────┘
+         │           │
+    ┌────▼────┐  ┌───▼──────────────┐
+    │  Tools  │  │   Resources      │
+    │ ├─Query │  │ ├─Schema         │
+    │ └─Discover   │ └─Metadata    │
+    └────┬────┘  └───┬──────────────┘
+         │           │
+    ┌────▼───────────▼──────────┐
+    │  DfE API Client           │
+    │  (Async HTTP to DfE API)  │
+    └────┬──────────────────────┘
+         │
+    ┌────▼──────────────────────────────────┐
+    │  DfE Education Statistics API          │
+    │  (api.education.gov.uk/statistics)   │
+    └───────────────────────────────────────┘
 ```
 
-3. Test via AI Playground or MCP client
+### Request Flow
+
+```
+1. User → Claude/Client
+   "What are apprenticeship starts in London?"
+
+2. AI Agent → Databricks App
+   POST /mcp
+   MCP call: search_apprenticeship_data(
+     region="London",
+     metric="starts"
+   )
+
+3. Databricks App → DfE MCP Server
+   Forwards request with OAuth authentication
+
+4. DfE MCP Server → DfE API
+   GET /statistics/apprenticeships?region=London&metric=starts
+   
+5. Response ← DfE API
+   JSON with regional statistics
+
+6. Client ← Databricks App
+   MCP response with formatted data
+
+7. User ← Claude/AI
+   "In London, there were X apprenticeship starts..."
+```
+
+### Data Sources
+
+| API | Purpose | Update Frequency |
+|-----|---------|-----------------|
+| [DfE Education Statistics](https://api.education.gov.uk/statistics/docs/) | Apprenticeship statistics | Monthly |
+
+## Deployment to Databricks Apps
+
+### Option 1: CLI Asset Bundle (Quick Deploy)
+
+From the repo root:
+
+```bash
+bash scripts/deploy_bundle.sh dev
+```
+
+Select option `1` to deploy `dft-mcp-server`, or `3` to deploy both apps.
+
+### Option 2: Databricks Notebook SDK (Interactive Deploy)
+
+From the repo root, open and run: [notebooks/04_deploy_dft_mcp_wheel.ipynb](../../notebooks/04_deploy_dft_mcp_wheel.ipynb)
+
+The notebook will:
+1. Sync this repo to workspace via Databricks Repos API
+2. Upload source files to workspace
+3. Create and deploy the app using Databricks SDK
+
+### Manual Deploy
+
+For custom deployments or troubleshooting:
+
+```bash
+databricks apps create dfte-mcp-server --source-code-path .
+databricks apps deploy dft-mcp-server
+```
+
+After deployment, test via AI Playground or MCP client
 
 ## Project Structure
 

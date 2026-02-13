@@ -1,0 +1,17 @@
+bundle:
+  name: manuka-dsit-mcp-demo
+
+targets:
+  dev:
+    default: true
+    workspace:
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/${bundle.target}
+
+resources:
+  apps:
+    dft_mcp_server:
+      name: dft-mcp-server
+      source_code_path: ./custom_mcps/dft-mcp-server
+    hello_world_mcp:
+      name: mcp-server-hello-world
+      source_code_path: ./custom_mcps/mcp-server-hello-world

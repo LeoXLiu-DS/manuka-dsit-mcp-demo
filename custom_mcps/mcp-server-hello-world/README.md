@@ -275,6 +275,77 @@ The default configuration:
 - **Host**: `0.0.0.0` (listens on all network interfaces)
 - **Port**: `8000` (configurable via `--port` argument)
 
+## Architecture
+
+### MCP Server Components
+
+```
+┌──────────────────────────────────────┐
+│   AI Agent / Claude / Client         │
+│   (with MCP protocol support)        │
+└────────────────┬─────────────────────┘
+                 │ HTTP/SSE
+        ┌────────▼────────┐
+        │ Databricks App  │
+        │ (OAuth proxy)   │
+        └────────┬────────┘
+                 │ HTTP
+    ┌────────────▼──────────────────┐
+    │    FastAPI + FastMCP          │
+    │    (mcp-server-hello-world)   │
+    └────┬──────────────┬───────────┘
+         │              │
+    ┌────▼────┐     ┌───▼──────────┐
+    │  Tools  │     │   Resources  │
+    │ ├─health│     │ (example)    │
+    │ └─get_current_user
+    └────┬────┘     └───┬──────────┘
+         │              │
+    ┌────▼──────────────▼──────┐
+    │  REST API Endpoints      │
+    │  ├─/mcp                  │
+    │  └─/health               │
+    └──────────────────────────┘
+```
+
+### Request Flow
+
+```
+1. User → Claude/Client
+   "What's your server health status?"
+
+2. AI Agent → Databricks App
+   POST /mcp
+   MCP call: health()
+
+3. Databricks App → MCP Server
+   Forwards HTTP request with OAuth token
+
+4. MCP Server → Response
+   Returns: {status: "healthy", version: "1.0"}
+   
+5. Client ← Databricks App
+   MCP response to AI agent
+
+6. User ← Claude/AI
+   "Your server is healthy and operational."
+```
+
+### Tool-Calling Flow
+
+```
+1. AI agent calls tool
+   └─→ Databricks App receives call_tool request
+       └─→ MCP Server processes tool invocation
+           ├─ Validate tool name & parameters
+           ├─ Execute tool function
+           └─ Return result to AI agent
+
+2. AI agent receives result
+   └─→ Uses result in conversation context
+       └─→ Responds to user with information
+```
+
 ## Deployment
 
 ### Databricks Apps
@@ -327,6 +398,40 @@ Add routes to the `app` FastAPI instance in `server/app.py`:
 @app.get("/custom-endpoint")
 def custom_endpoint():
     return {"message": "Hello from custom endpoint"}
+```
+
+## Deployment to Databricks Apps
+
+### Option 1: CLI Asset Bundle (Quick Deploy)
+
+From the repo root:
+
+```bash
+bash scripts/deploy_bundle.sh dev
+```
+
+Select option `2` to deploy `mcp-server-hello-world`, or `3` to deploy both apps.
+
+### Option 2: Databricks Notebook SDK (Interactive Deploy)
+
+From the repo root, open and run: [notebooks/04_deploy_dft_mcp_wheel.ipynb](../../notebooks/04_deploy_dft_mcp_wheel.ipynb)
+
+Customize the notebook to deploy this app instead:
+- Change `REPO_DIR` to point to `custom_mcps/mcp-server-hello-world`
+- Update `APP_NAME` to `mcp-server-hello-world` or your preferred name
+
+The notebook will:
+1. Sync the repo to workspace via Databricks Repos API
+2. Upload source files to workspace
+3. Create and deploy the app using Databricks SDK
+
+### Manual Deploy
+
+For custom deployments:
+
+```bash
+databricks apps create mcp-server-hello-world --source-code-path .
+databricks apps deploy mcp-server-hello-world
 ```
 
 ## Troubleshooting

@@ -2,7 +2,27 @@
 
 This directory contains scripts for local development and testing of the DfE MCP server.
 
-## Scripts
+## Deployment Scripts
+
+### Quick Deployment to Databricks Apps
+
+For one-click deployment from the repo root:
+
+```bash
+bash scripts/deploy_bundle.sh dev
+```
+
+This deploys using the Databricks Asset Bundle configuration ([databricks.yml](../../../../databricks.yml)).
+
+### Notebook-Based Deployment
+
+For interactive deployment from a Databricks notebook:
+
+1. Open [notebooks/04_deploy_dft_mcp_wheel.ipynb](../../../../notebooks/04_deploy_dft_mcp_wheel.ipynb)
+2. Run cells in order to deploy with real-time feedback
+3. Customize app name and workspace paths as needed
+
+## Testing Scripts
 
 ### `start_server.sh`
 

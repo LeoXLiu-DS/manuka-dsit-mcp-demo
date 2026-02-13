@@ -10,6 +10,26 @@ Scripts for testing and developing the MCP server.
 | `start_server.sh` | Start local dev server | `localhost:8000` |
 | `generate_oauth_token.py` | Generate OAuth tokens | Any |
 
+## Deployment
+
+### Quick Deploy (CLI Asset Bundle)
+
+From the repo root:
+
+```bash
+bash scripts/deploy_bundle.sh dev
+```
+
+Select option `2` to deploy this app, or `3` to deploy both apps.
+
+### Interactive Deploy (Notebook SDK)
+
+From the repo root, open and run: [notebooks/04_deploy_dft_mcp_wheel.ipynb](../../../../notebooks/04_deploy_dft_mcp_wheel.ipynb)
+
+Customize to deploy this app by updating:
+- `REPO_DIR` to `custom_mcps/mcp-server-hello-world`
+- `APP_NAME` to `mcp-server-hello-world` or your preferred name
+
 ## Testing
 
 ### Local Testing
