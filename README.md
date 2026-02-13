@@ -17,6 +17,7 @@
 * Run the sample notebooks to explore data pipelines and integration workflows.
 * Modify scripts and configurations to suit your own data and requirements.
 * Refer to the documentation for detailed guides and examples.
+* DfT MCP server question prompts: [custom_mcps/dft-mcp-server/QUESTIONS.md](custom_mcps/dft-mcp-server/QUESTIONS.md)
 
 ## Deployment Methods
 
@@ -51,7 +52,7 @@ bash scripts/deploy_bundle.sh dev --no-start
 
 Deploy apps interactively from a Databricks notebook using the Python SDK:
 
-1. Open notebook: [04_deploy_dft_mcp_wheel.ipynb](notebooks/04_deploy_dft_mcp_wheel.ipynb)
+1. Open notebook: [04_deploy_dft_mcp.ipynb](notebooks/04_deploy_dft_mcp.ipynb)
 2. Run cells in order:
    - Cell 1: Configuration (customize app name and paths)
    - Cell 2: SDK upgrade and Python restart

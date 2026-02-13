@@ -75,6 +75,8 @@ uv run pytest tests/
 
 ## Example Usage
 
+- Question prompts: [QUESTIONS.md](QUESTIONS.md)
+
 ### Discover Available Data
 
 ```python
@@ -217,7 +219,7 @@ Select option `1` to deploy `dft-mcp-server`, or `3` to deploy both apps.
 
 ### Option 2: Databricks Notebook SDK (Interactive Deploy)
 
-From the repo root, open and run: [notebooks/04_deploy_dft_mcp_wheel.ipynb](../../notebooks/04_deploy_dft_mcp_wheel.ipynb)
+From the repo root, open and run: [notebooks/04_deploy_dft_mcp.ipynb](../../notebooks/04_deploy_dft_mcp.ipynb)
 
 The notebook will:
 1. Sync this repo to workspace via Databricks Repos API
