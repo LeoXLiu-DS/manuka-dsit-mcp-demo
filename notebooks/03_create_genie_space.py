@@ -29,17 +29,26 @@ warehouse_id = dbutils.widgets.get("warehouse_id")
 
 # COMMAND ----------
 
+#check if warehouse exists else raise error
+try:
+  w.warehouses.get(id=warehouse_id)
+except:
+  raise Exception(f"warehouse {warehouse_id} does not exist")
+
+# COMMAND ----------
+
 # DBTITLE 1,Cell 4
 import json
 
-# Define the Genie space configuration
+# Define the Genie space configuration with columns sorted alphabetically
 space_config = {
     "version": 2,
     "data_sources": {
         "tables": [
             {
                 "identifier": f"`{catalog}`.`{schema}`.silver_pupil_dest_data",
-                "column_configs": [
+                "column_configs": sorted([
+                    { "column_name": "admission_policy", "enable_format_assistance": True, "enable_entity_matching": True },
                     { "column_name": "apprenticeship_level_2", "enable_format_assistance": True, "enable_entity_matching": True },
                     { "column_name": "apprenticeship_level_3", "enable_format_assistance": True, "enable_entity_matching": True },
                     { "column_name": "apprenticeship_level_4_plus", "enable_format_assistance": True, "enable_entity_matching": True },
@@ -55,6 +64,7 @@ space_config = {
                     { "column_name": "destination_unknown", "enable_format_assistance": True, "enable_entity_matching": True },
                     { "column_name": "education", "enable_format_assistance": True, "enable_entity_matching": True },
                     { "column_name": "employment", "enable_format_assistance": True, "enable_entity_matching": True },
+                    { "column_name": "entry_gender", "enable_format_assistance": True, "enable_entity_matching": True },
                     { "column_name": "further_ed_level_1", "enable_format_assistance": True, "enable_entity_matching": True },
                     { "column_name": "further_ed_level_2", "enable_format_assistance": True, "enable_entity_matching": True },
                     { "column_name": "further_ed_level_3", "enable_format_assistance": True, "enable_entity_matching": True },
@@ -66,19 +76,22 @@ space_config = {
                     { "column_name": "la_name", "enable_format_assistance": True, "enable_entity_matching": True },
                     { "column_name": "lad_code", "enable_format_assistance": True, "enable_entity_matching": True },
                     { "column_name": "lad_name", "enable_format_assistance": True, "enable_entity_matching": True },
+                    { "column_name": "local_authority_selection_status", "enable_format_assistance": True, "enable_entity_matching": True },
                     { "column_name": "new_la_code", "enable_format_assistance": True, "enable_entity_matching": True },
                     { "column_name": "not_sustained_destination", "enable_format_assistance": True, "enable_entity_matching": True },
                     { "column_name": "old_la_code", "enable_format_assistance": True, "enable_entity_matching": True },
-                    { "column_name": "other_education", "enable_format_assistance": True, "enable_entity_matching": True },
                     { "column_name": "overall", "enable_format_assistance": True, "enable_entity_matching": True },
                     { "column_name": "pcon_code", "enable_format_assistance": True, "enable_entity_matching": True },
                     { "column_name": "pcon_name", "enable_format_assistance": True, "enable_entity_matching": True },
                     { "column_name": "region_code", "enable_format_assistance": True, "enable_entity_matching": True },
                     { "column_name": "region_name", "enable_format_assistance": True, "enable_entity_matching": True },
+                    { "column_name": "school_laestab", "enable_format_assistance": True, "enable_entity_matching": True },
+                    { "column_name": "school_name", "enable_format_assistance": True, "enable_entity_matching": True },
+                    { "column_name": "school_urn", "enable_format_assistance": True, "enable_entity_matching": True },
                     { "column_name": "time_identifier", "enable_format_assistance": True, "enable_entity_matching": True },
                     { "column_name": "time_period", "enable_format_assistance": True, "enable_entity_matching": True },
                     { "column_name": "version", "enable_format_assistance": True, "enable_entity_matching": True }
-                ]
+                ], key=lambda x: x["column_name"])
             }
         ]
     },
@@ -86,6 +99,7 @@ space_config = {
 
 # Serialize to JSON string
 serialized_space = json.dumps(space_config)
+
 
 # COMMAND ----------
 
@@ -110,6 +124,14 @@ space_config_stops = {
     "version": 2,
     "data_sources": {
         "tables": [
+            {
+                "identifier": f"`{catalog}`.`{schema}`.silver_stop_codes",
+                "column_configs": [
+                    { "column_name": "Description", "enable_format_assistance": True, "enable_entity_matching": True },
+                    { "column_name": "StopType", "enable_format_assistance": True, "enable_entity_matching": True },
+                    { "column_name": "id", "enable_format_assistance": True, "enable_entity_matching": True }
+                ]
+            },
             {
                 "identifier": f"`{catalog}`.`{schema}`.silver_stops",
                 "column_configs": [
@@ -143,6 +165,7 @@ space_config_stops = {
 
 # Serialize to JSON string
 serialized_space_stops = json.dumps(space_config_stops)
+
 
 # COMMAND ----------
 
