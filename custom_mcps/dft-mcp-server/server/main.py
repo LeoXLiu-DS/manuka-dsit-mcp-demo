@@ -1,9 +1,9 @@
 """
-Main entry point for the DfE MCP server application.
+Main entry point for the DfT MCP server application.
 
 This module provides the main() function that starts the uvicorn server.
 It's configured as the entry point in pyproject.toml, so you can run the server
-using the command: dfe-mcp-server
+using the command: dft-mcp-server
 
 The server uses uvicorn (an ASGI server) to serve the FastAPI/FastMCP application.
 """
@@ -15,7 +15,7 @@ import uvicorn
 
 def main():
     """
-    Start the DfE MCP server using uvicorn.
+    Start the DfT MCP server using uvicorn.
 
     This function is the main entry point for the application. It configures and
     starts the uvicorn ASGI server with the combined FastAPI/FastMCP application.
@@ -25,10 +25,10 @@ def main():
         - port: Configurable via --port argument (default: 8000)
 
     Usage:
-        Run with default port: uv run dfe-mcp-server
-        Run with custom port: uv run dfe-mcp-server --port 8080
+        Run with default port: uv run dft-mcp-server
+        Run with custom port: uv run dft-mcp-server --port 8080
     """
-    parser = argparse.ArgumentParser(description="Start the DfE MCP server")
+    parser = argparse.ArgumentParser(description="Start the DfT MCP server")
     parser.add_argument(
         "--port", type=int, default=8000, help="Port to run the server on (default: 8000)"
     )

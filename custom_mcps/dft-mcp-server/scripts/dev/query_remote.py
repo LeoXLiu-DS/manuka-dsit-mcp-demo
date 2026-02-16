@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Test remote DfE MCP server deployed as a Databricks App.
+Test remote DfT MCP server deployed as a Databricks App.
 
 This script tests the remote MCP server with user-level OAuth authentication,
-calling tools to verify the DfE apprenticeship data functionality.
+calling tools to verify the DfT transport data functionality.
 
 Usage:
     python query_remote.py --host <host> --token <token> --app-url <app-url>
@@ -12,7 +12,7 @@ Example:
     python query_remote.py \\
         --host https://dbc-a1b2345c-d6e7.cloud.databricks.com \\
         --token eyJr...Dkag \\
-        --app-url https://dbc-a1b2345c-d6e7.cloud.databricks.com/serving-endpoints/dfe-mcp-server
+        --app-url https://dbc-a1b2345c-d6e7.cloud.databricks.com/serving-endpoints/dft-mcp-server
 """
 
 import argparse
@@ -24,7 +24,7 @@ from databricks_mcp import DatabricksMCPClient
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Test remote DfE MCP server deployed as Databricks App"
+        description="Test remote DfT MCP server deployed as Databricks App"
     )
 
     parser.add_argument("--host", required=True, help="Databricks workspace URL")
@@ -36,7 +36,7 @@ def main():
     args = parser.parse_args()
 
     print("=" * 70)
-    print("Testing Remote DfE MCP Server - Databricks App")
+    print("Testing Remote DfT MCP Server - Databricks App")
     print("=" * 70)
     print(f"\nWorkspace: {args.host}")
     print(f"App URL: {args.app_url}")
@@ -95,17 +95,16 @@ def main():
         print("✓ get_available_data tool works")
         print()
 
-        # Test search_apprenticeship_data tool
-        print("Step 7: Testing search_apprenticeship_data tool...")
+        # Test count_access_points tool
+        print("Step 7: Testing count_access_points tool...")
         print("-" * 70)
-        result = mcp_client.call_tool("search_apprenticeship_data", {
-            "query_type": "single_region",
-            "region": "National",
-            "metric": "starts"
+        result = mcp_client.call_tool("count_access_points", {
+            "region": "London",
+            "transport_type": "bus"
         })
         print(result)
         print("-" * 70)
-        print("✓ search_apprenticeship_data tool works")
+        print("✓ count_access_points tool works")
         print()
 
         print("=" * 70)

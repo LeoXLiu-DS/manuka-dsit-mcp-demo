@@ -1,5 +1,5 @@
 """
-Integration tests for the DfE MCP Server.
+Integration tests for the DfT MCP Server.
 
 These tests start the server locally and verify that tools, resources,
 and prompts work correctly.
@@ -47,7 +47,7 @@ def run_mcp_server():
     host = "127.0.0.1"
     port = _find_free_port()
     url = f"http://{host}:{port}"
-    cmd = shlex.split(f"uv run dfe-mcp-server --port {port}")
+    cmd = shlex.split(f"uv run dft-mcp-server --port {port}")
 
     # Start the process
     proc = subprocess.Popen(
@@ -97,7 +97,7 @@ def test_server_health(run_mcp_server):
         assert data.get("status") == "healthy"
     else:
         # Static HTML is also acceptable
-        assert "DfE MCP Server" in response.text or response.status_code == 200
+        assert "DfT MCP Server" in response.text or response.status_code == 200
 
 
 # Test MCP endpoint exists
@@ -131,40 +131,37 @@ def test_tools_registration():
 @pytest.mark.asyncio
 async def test_get_available_data_tool():
     """Test the get_available_data tool returns expected structure."""
-    from server.dfe_api import get_dfe_client
+    from server.naptan_api import get_naptan_client
 
-    client = get_dfe_client()
+    client = get_naptan_client()
 
     try:
-        # Load metadata
-        await client._load_metadata()
-
         # Check regions are available
         regions = await client.get_available_regions()
-        assert "National" in regions
-        assert len(regions) > 1  # Should have multiple regions
+        assert len(regions) > 0
+        assert "London" in regions or "North East" in regions
 
-        # Check years are available
-        years = await client.get_available_years()
-        assert len(years) > 0
-        # Years should be in format like "2024/25"
-        assert "/" in years[0]
+        # Check transport types are available
+        transport_types = await client.get_available_transport_types()
+        assert len(transport_types) > 0
+        assert "bus" in transport_types
+        assert "rail" in transport_types
 
     finally:
         await client.close()
 
 
 # Test API client initialization
-def test_dfe_api_client_creation():
-    """Test that the DfE API client can be created."""
-    from server.dfe_api import DfEApiClient, get_dfe_client
+def test_naptan_api_client_creation():
+    """Test that the NaPTAN API client can be created."""
+    from server.naptan_api import NaPTANApiClient, get_naptan_client
 
-    client = DfEApiClient()
-    assert client.base_url == "https://api.education.gov.uk/statistics/v1"
-    assert client.timeout == 30.0
+    client = NaPTANApiClient()
+    assert client.base_url == "https://naptan.api.dft.gov.uk"
+    assert client.timeout == 120.0
 
     # Test singleton
-    shared_client = get_dfe_client()
+    shared_client = get_naptan_client()
     assert shared_client is not None
 
 
@@ -183,51 +180,47 @@ def test_schema_resource_content():
     assert mcp is not None
 
 
-# Test normalization functions
-def test_region_normalization():
-    """Test that region names are normalized correctly."""
-    from server.dfe_api import DfEApiClient
+# Test region mapping
+def test_region_atco_code_mapping():
+    """Test that regions map to ATCO codes correctly."""
+    from server.naptan_api import REGION_ATCO_CODES, NaPTANApiClient
 
-    client = DfEApiClient()
+    client = NaPTANApiClient()
 
-    assert client._normalize_region("national") == "National"
-    assert client._normalize_region("North East") == "North East"
-    assert client._normalize_region("northeast") == "North East"
-    assert client._normalize_region("london") == "London"
-    assert client._normalize_region("Yorkshire and The Humber") == "Yorkshire and The Humber"
-    assert client._normalize_region("yorkshire") == "Yorkshire and The Humber"
+    # Test that regions exist
+    assert "London" in REGION_ATCO_CODES
+    assert "North East" in REGION_ATCO_CODES
+    assert "Yorkshire and The Humber" in REGION_ATCO_CODES
 
+    # Test getting ATCO codes for regions
+    london_codes = client.get_atco_codes_for_region("London")
+    assert len(london_codes) > 0
+    assert "490" in london_codes
 
-def test_age_group_normalization():
-    """Test that age groups are normalized correctly."""
-    from server.dfe_api import DfEApiClient
-
-    client = DfEApiClient()
-
-    assert client._normalize_age_group("under_19") == "Under 19"
-    assert client._normalize_age_group("19_to_24") == "19 to 24"
-    assert client._normalize_age_group("25_plus") == "25 plus"
-    assert client._normalize_age_group("all") == "Total"
+    northeast_codes = client.get_atco_codes_for_region("North East")
+    assert len(northeast_codes) > 0
 
 
-def test_level_normalization():
-    """Test that apprenticeship levels are normalized correctly."""
-    from server.dfe_api import DfEApiClient
+# Test transport type groupings
+def test_transport_type_groupings():
+    """Test that transport types are correctly grouped."""
+    from server.naptan_api import TRANSPORT_TYPES, STOP_TYPES
 
-    client = DfEApiClient()
+    # Test that transport types exist
+    assert "bus" in TRANSPORT_TYPES
+    assert "rail" in TRANSPORT_TYPES
+    assert "metro" in TRANSPORT_TYPES
 
-    assert client._normalize_level("intermediate") == "Intermediate Apprenticeship"
-    assert client._normalize_level("advanced") == "Advanced Apprenticeship"
-    assert client._normalize_level("higher") == "Higher Apprenticeship"
-    assert client._normalize_level("all") == "Total"
+    # Test that stop types exist
+    assert "BST" in STOP_TYPES  # On-street bus stop
+    assert "RLY" in STOP_TYPES  # Railway station
+    assert "MET" in STOP_TYPES  # Metro platform
 
+    # Test that transport types map to stop types
+    bus_types = TRANSPORT_TYPES["bus"]
+    assert "BST" in bus_types
+    assert "BCS" in bus_types
 
-def test_metric_indicator_mapping():
-    """Test that metrics map to correct indicators."""
-    from server.dfe_api import DfEApiClient
-
-    client = DfEApiClient()
-
-    assert client._get_metric_indicator("starts") == "Starts"
-    assert client._get_metric_indicator("achievements") == "Achievements"
-    assert client._get_metric_indicator("participation") == "Learner participation"
+    rail_types = TRANSPORT_TYPES["rail"]
+    assert "RLY" in rail_types
+    assert "PLT" in rail_types

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DfE MCP Server</title>
+    <title>DfT MCP Server</title>
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -44,49 +44,55 @@
     </style>
 </head>
 <body>
-    <h1>DfE MCP Server</h1>
+    <h1>DfT MCP Server</h1>
     <p class="status">✓ Server is running</p>
 
     <p>
-        This MCP server provides access to Department for Education apprenticeship statistics.
+        This MCP server provides access to Department for Transport NaPTAN transport access point data.
         Connect via the MCP endpoint at <code>/mcp</code>.
     </p>
 
     <h2>Available Tools</h2>
 
     <div class="tool">
-        <span class="tool-name">search_apprenticeship_data</span>
+        <span class="tool-name">get_transport_coverage</span>
         <span class="badge badge-tool">Tool</span>
-        <p>Query apprenticeship statistics with flexible filters for region, age group, level, and year.</p>
+        <p>Get public transport access points (bus stops, rail stations, etc.) for a region or locality.</p>
+    </div>
+
+    <div class="tool">
+        <span class="tool-name">count_access_points</span>
+        <span class="badge badge-tool">Tool</span>
+        <p>Count transport access points by type in a region, broken down by transport mode.</p>
     </div>
 
     <div class="tool">
         <span class="tool-name">get_available_data</span>
         <span class="badge badge-tool">Tool</span>
-        <p>Discover what regions, metrics, and time periods are available to query.</p>
+        <p>Discover what regions, transport types, and stop types are available to query.</p>
     </div>
 
     <h2>Resources</h2>
 
     <div class="tool">
-        <span class="tool-name">dfe://schema/apprenticeship-statistics</span>
+        <span class="tool-name">dft://schema/transport-access-points</span>
         <span class="badge badge-resource">Resource</span>
-        <p>Schema and metadata for apprenticeship statistics including metric definitions and data quality notes.</p>
+        <p>Schema and metadata for NaPTAN transport data including stop type definitions and geographic coverage.</p>
     </div>
 
     <h2>Prompts</h2>
 
     <div class="tool">
-        <span class="tool-name">regional-analysis</span>
+        <span class="tool-name">transport-accessibility-analysis</span>
         <span class="badge badge-prompt">Prompt</span>
-        <p>Guided analysis template for comprehensive regional apprenticeship outcomes.</p>
+        <p>Guided analysis template for comprehensive transport accessibility assessment in any region.</p>
     </div>
 
     <h2>Data Source</h2>
     <p>
         Data is sourced from the
-        <a href="https://api.education.gov.uk/statistics/docs/" target="_blank">DfE Education Statistics API</a>
-        under the Open Government Licence v3.0.
+        <a href="https://naptan.api.dft.gov.uk/swagger" target="_blank">DfT NaPTAN API</a>
+        (National Public Transport Access Nodes) under the Open Government Licence v3.0.
     </p>
 
     <h2>Documentation</h2>

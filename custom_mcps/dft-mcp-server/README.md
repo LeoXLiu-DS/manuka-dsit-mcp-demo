@@ -1,23 +1,23 @@
-# DfE MCP Server
+# DfT MCP Server
 
-An MCP (Model Context Protocol) server for Department for Education apprenticeship statistics, built with FastMCP and deployable on Databricks Apps.
+An MCP (Model Context Protocol) server for Department for Transport NaPTAN data, built with FastMCP and deployable on Databricks Apps.
 
 ## Overview
 
-This server wraps the [DfE Education Statistics API](https://api.education.gov.uk/statistics/docs/) and exposes apprenticeship data through the MCP protocol. It enables AI agents to query:
+This server wraps the [DfT NaPTAN API](https://naptan.api.dft.gov.uk/swagger) and exposes transport access point data through the MCP protocol. It enables AI agents to query:
 
-- **Apprenticeship starts** - Programme commencements
-- **Achievements** - Completions
-- **Participation** - Active apprentices
+- **Transport coverage** - Access points by region/locality
+- **Access point counts** - Statistics by transport type
+- **Available data** - Regions, transport types, stop types
 
-Data is available at national and regional levels, filterable by age group and apprenticeship level.
+Data covers all public transport access points across Great Britain (England, Scotland, Wales).
 
 ## Features
 
-- 2 MCP tools for querying and discovering data
+- 3 MCP tools for querying and discovering transport data
 - 1 MCP resource with schema/metadata
-- 1 MCP prompt for guided regional analysis
-- Async HTTP client for DfE API
+- 1 MCP prompt for guided transport analysis
+- Async HTTP client for NaPTAN API
 - Ready for Databricks Apps deployment
 
 ## Quick Start
@@ -41,7 +41,7 @@ uv sync
 ./scripts/dev/start_server.sh
 
 # Or directly
-uv run dfe-mcp-server
+uv run dft-mcp-server
 ```
 
 Server starts at `http://localhost:8000`.
@@ -58,20 +58,21 @@ uv run pytest tests/
 
 | Tool | Description |
 |------|-------------|
-| `search_apprenticeship_data` | Query statistics with filters (region, age, level, year) |
-| `get_available_data` | Discover available regions, metrics, years |
+| `get_transport_coverage` | Get transport access points for a region/locality |
+| `count_access_points` | Count transport nodes by type in a region |
+| `get_available_data` | Discover available regions, transport types, stop types |
 
 ### Resources
 
 | URI | Description |
 |-----|-------------|
-| `dfe://schema/apprenticeship-statistics` | Schema and metadata |
+| `dft://schema/transport-access-points` | Schema and metadata for NaPTAN data |
 
 ### Prompts
 
 | Name | Description |
 |------|-------------|
-| `regional-analysis` | Guided analysis for a region |
+| `transport-accessibility-analysis` | Guided transport accessibility analysis for a region |
 
 ## Example Usage
 
@@ -81,55 +82,46 @@ uv run pytest tests/
 get_available_data(data_type="all")
 ```
 
-### Query National Starts
+### Count Transport in London
 
 ```python
-search_apprenticeship_data(
-    query_type="single_region",
-    region="national",
-    metric="starts"
+count_access_points(region="London")
+```
+
+### Get Rail Stations in Yorkshire
+
+```python
+get_transport_coverage(
+    region="Yorkshire and The Humber",
+    transport_type="rail"
 )
 ```
 
-### Compare Regions
+### Search for Transport in Sheffield
 
 ```python
-search_apprenticeship_data(
-    query_type="compare_regions",
+get_transport_coverage(
+    locality="Sheffield",
+    limit=50
+)
+```
+
+### Count Bus Stops in North East
+
+```python
+count_access_points(
     region="North East",
-    compare_to=["London", "South West"],
-    level="higher"
-)
-```
-
-### Regional Rankings
-
-```python
-search_apprenticeship_data(
-    query_type="rankings",
-    metric="starts",
-    age_group="under_19",
-    bottom_n=5
-)
-```
-
-### Time Series
-
-```python
-search_apprenticeship_data(
-    query_type="trends",
-    region="North East",
-    metric="starts"
+    transport_type="bus"
 )
 ```
 
 ## Data Coverage
 
-- **Geography**: England (national + 9 regions)
-- **Time**: 2017/18 to 2025/26
-- **Metrics**: Starts, Achievements, Participation
-- **Levels**: Intermediate (L2), Advanced (L3), Higher (L4+)
-- **Age groups**: Under 19, 19-24, 25+
+- **Geography**: England (9 regions), Scotland, Wales
+- **Transport Types**: Bus, Rail, Metro, Tram, Air, Ferry, Taxi
+- **Stop Types**: BST, BCS, RLY, PLT, MET, AIR, FER, TXR, and more
+- **Data Source**: NaPTAN (National Public Transport Access Nodes)
+- **Updates**: Continuous (live dataset)
 
 ## Deployment to Databricks Apps
 
@@ -137,8 +129,8 @@ search_apprenticeship_data(
 2. Deploy using Databricks CLI:
 
 ```bash
-databricks apps create dfe-mcp-server --source-code-path .
-databricks apps deploy dfe-mcp-server
+databricks apps create dft-mcp-server --source-code-path .
+databricks apps deploy dft-mcp-server
 ```
 
 3. Test via AI Playground or MCP client
@@ -146,12 +138,12 @@ databricks apps deploy dfe-mcp-server
 ## Project Structure
 
 ```
-dfe-mcp-server/
+dft-mcp-server/
 ├── server/
 │   ├── app.py          # FastAPI + FastMCP setup
 │   ├── main.py         # Entry point
 │   ├── tools.py        # MCP tools, resources, prompts
-│   ├── dfe_api.py      # DfE API client
+│   ├── naptan_api.py   # NaPTAN API client
 │   └── utils.py        # Auth helpers
 ├── scripts/dev/        # Development scripts
 ├── tests/              # Integration tests
@@ -162,11 +154,11 @@ dfe-mcp-server/
 
 ## License
 
-This project uses data from the DfE Education Statistics API under the [Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/).
+This project uses data from the DfT NaPTAN API under the [Open Government Licence v3.0](https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/).
 
 ## Related
 
-- [DfE Education Statistics API](https://api.education.gov.uk/statistics/docs/)
+- [NaPTAN API Documentation](https://naptan.api.dft.gov.uk/swagger)
 - [Model Context Protocol](https://modelcontextprotocol.io)
 - [FastMCP](https://github.com/jlowin/fastmcp)
 - [Databricks Apps](https://docs.databricks.com/en/dev-tools/databricks-apps/)

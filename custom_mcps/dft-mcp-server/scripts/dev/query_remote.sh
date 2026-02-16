@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
 
 echo "=========================================="
-echo "Test Remote DfE MCP Server - Databricks App"
+echo "Test Remote DfT MCP Server - Databricks App"
 echo "=========================================="
 echo ""
 
@@ -20,7 +20,7 @@ echo "✓ Using profile: $profile_name"
 echo ""
 
 # Step 2: Get Databricks App name
-read -p "Enter Databricks App name (e.g., dfe-mcp-server): " app_name
+read -p "Enter Databricks App name (e.g., dft-mcp-server): " app_name
 if [ -z "$app_name" ]; then
     echo "❌ Error: App name is required"
     exit 1
@@ -130,7 +130,7 @@ echo "✓ OAuth token generated successfully"
 echo ""
 
 # Step 6: Run the test
-echo "Step 4: Testing remote DfE MCP server..."
+echo "Step 4: Testing remote DfT MCP server..."
 echo ""
 
 cd "$PROJECT_ROOT"
@@ -143,12 +143,12 @@ uv run python "$SCRIPT_DIR/query_remote.py" \
 if [ $? -eq 0 ]; then
     echo ""
     echo "=========================================="
-    echo "✓ Remote DfE MCP Server Test Complete!"
+    echo "✓ Remote DfT MCP Server Test Complete!"
     echo "=========================================="
 else
     echo ""
     echo "=========================================="
-    echo "✗ Remote DfE MCP Server Test Failed"
+    echo "✗ Remote DfT MCP Server Test Failed"
     echo "=========================================="
     exit 1
 fi
