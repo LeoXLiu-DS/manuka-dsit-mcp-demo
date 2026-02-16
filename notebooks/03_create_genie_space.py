@@ -7,9 +7,10 @@ dbutils.library.restartPython()
 
 # COMMAND ----------
 
+# DBTITLE 1,Cell 3
 dbutils.widgets.text("catalog", "dsit_mcp", "Catalog")
 dbutils.widgets.text("schema", "02_silver", "Schema")
-dbutils.widgets.text("warehouse_id", "0999489443c958fe", "Warehouse ID")
+dbutils.widgets.text("warehouse_id", "", "Warehouse ID")
 
 # COMMAND ----------
 
@@ -29,11 +30,21 @@ warehouse_id = dbutils.widgets.get("warehouse_id")
 
 # COMMAND ----------
 
-#check if warehouse exists else raise error
+# DBTITLE 1,Cell 6
+# Check if warehouse exists else load current warehouse
+if not warehouse_id:
+    # Attempt to load the ID of the current warehouse
+    warehouses = w.warehouses.list()
+    try:
+        # Use the first available warehouse as default
+        warehouse_id = next(iter(warehouses)).id
+        print(f"No warehouse_id provided. Using default warehouse: {warehouse_id}")
+    except StopIteration:
+        raise Exception("No SQL warehouses available. Please create one in the Compute tab.")
 try:
-  w.warehouses.get(id=warehouse_id)
+    w.warehouses.get(id=warehouse_id)
 except:
-  raise Exception(f"warehouse {warehouse_id} does not exist")
+    raise Exception(f"warehouse {warehouse_id} does not exist")
 
 # COMMAND ----------
 
@@ -113,69 +124,3 @@ genie_space = w.genie.create_space(
 )
 
 print(f"Created Genie space with ID: {genie_space.space_id}")
-
-# COMMAND ----------
-
-# DBTITLE 1,Cell 7
-import json
-
-# Define the Genie space configuration for silver_stops
-space_config_stops = {
-    "version": 2,
-    "data_sources": {
-        "tables": [
-            {
-                "identifier": f"`{catalog}`.`{schema}`.silver_stop_codes",
-                "column_configs": [
-                    { "column_name": "Description", "enable_format_assistance": True, "enable_entity_matching": True },
-                    { "column_name": "StopType", "enable_format_assistance": True, "enable_entity_matching": True },
-                    { "column_name": "id", "enable_format_assistance": True, "enable_entity_matching": True }
-                ]
-            },
-            {
-                "identifier": f"`{catalog}`.`{schema}`.silver_stops",
-                "column_configs": [
-                    { "column_name": "ATCOCode", "enable_format_assistance": True, "enable_entity_matching": True },
-                    { "column_name": "AdministrativeAreaCode", "enable_format_assistance": True, "enable_entity_matching": True },
-                    { "column_name": "Bearing", "enable_format_assistance": True, "enable_entity_matching": True },
-                    { "column_name": "BusStopType", "enable_format_assistance": True, "enable_entity_matching": True },
-                    { "column_name": "CommonName", "enable_format_assistance": True, "enable_entity_matching": True },
-                    { "column_name": "CreationDateTime", "enable_format_assistance": True, "enable_entity_matching": True },
-                    { "column_name": "GridType", "enable_format_assistance": True, "enable_entity_matching": True },
-                    { "column_name": "Indicator", "enable_format_assistance": True, "enable_entity_matching": True },
-                    { "column_name": "LocalityCentre", "enable_format_assistance": True, "enable_entity_matching": True },
-                    { "column_name": "LocalityName", "enable_format_assistance": True, "enable_entity_matching": True },
-                    { "column_name": "Modification", "enable_format_assistance": True, "enable_entity_matching": True },
-                    { "column_name": "ModificationDateTime", "enable_format_assistance": True, "enable_entity_matching": True },
-                    { "column_name": "NaptanCode", "enable_format_assistance": True, "enable_entity_matching": True },
-                    { "column_name": "NptgLocalityCode", "enable_format_assistance": True, "enable_entity_matching": True },
-                    { "column_name": "ParentLocalityName", "enable_format_assistance": True, "enable_entity_matching": True },
-                    { "column_name": "RevisionNumber", "enable_format_assistance": True, "enable_entity_matching": True },
-                    { "column_name": "Status", "enable_format_assistance": True, "enable_entity_matching": True },
-                    { "column_name": "StopCodeId", "enable_format_assistance": True, "enable_entity_matching": True },
-                    { "column_name": "Street", "enable_format_assistance": True, "enable_entity_matching": True },
-                    { "column_name": "TimingStatus", "enable_format_assistance": True, "enable_entity_matching": True },
-                    { "column_name": "Town", "enable_format_assistance": True, "enable_entity_matching": True },
-                    { "column_name": "geography", "enable_format_assistance": True, "enable_entity_matching": True }
-                ]
-            }
-        ]
-    },
-}
-
-# Serialize to JSON string
-serialized_space_stops = json.dumps(space_config_stops)
-
-
-# COMMAND ----------
-
-# DBTITLE 1,Cell 8
-# Create the Genie space for silver_stops
-genie_space_stops = w.genie.create_space(
-    description="Space for analyzing stop data",
-    warehouse_id=warehouse_id,
-    serialized_space=serialized_space_stops,
-    title="National Stops"
-)
-
-print(f"Created Genie space with ID: {genie_space_stops.space_id}")
