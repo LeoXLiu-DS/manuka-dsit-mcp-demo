@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
 
 echo "=========================================="
-echo "Starting DfE MCP Server - Local Development"
+echo "Starting DfT MCP Server - Local Development"
 echo "=========================================="
 echo ""
 
@@ -15,8 +15,8 @@ uv sync
 echo "✓ Dependencies synced"
 echo ""
 
-echo "Step 2: Starting DfE MCP server on http://localhost:8000..."
+echo "Step 2: Starting DfT MCP server on http://localhost:8000..."
 echo "Press Ctrl+C to stop the server"
 echo ""
 
-uv run dfe-mcp-server
+uv run dft-mcp-server
